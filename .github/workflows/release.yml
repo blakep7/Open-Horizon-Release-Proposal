@@ -1,0 +1,28 @@
+name: Open Horizon Release Manager
+
+on:
+  workflow_dispatch:
+    inputs:
+      example_input:
+        description: 'This is an example input'
+        required: true
+        default: 'Test'
+        type: choice
+        options:
+          - info
+          - warning
+          - test2
+          
+  repository_dispatch:
+
+jobs:
+
+  release:
+    runs-on: ubuntu-20.04
+
+    environment: release-environment
+
+    steps:
+      - name: Placeholder
+        run:
+          echo "Placeholder"
