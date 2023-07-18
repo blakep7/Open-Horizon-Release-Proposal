@@ -26,4 +26,6 @@ jobs:
     steps:
       - name: Placeholder
         run:
-          echo '${{ github.event.client_payload.versionJSON }}'
+          echo "$ANAX_VERSION"
+        env:
+          ANAX_VERSION: ${{ fromJSON(github.event.client_payload.versionJSON) }}
