@@ -12,8 +12,9 @@ on:
           - info
           - warning
           - test2
-          
+
   repository_dispatch:
+    types: [release-trigger]
 
 jobs:
 
@@ -25,4 +26,4 @@ jobs:
     steps:
       - name: Placeholder
         run:
-          echo "Placeholder"
+          echo ${{ github.event.client_payload.versionJSON }}
