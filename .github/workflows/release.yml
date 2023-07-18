@@ -26,4 +26,4 @@ jobs:
     steps:
       - name: Placeholder
         run:
-          echo ${{ github.event.client_payload.versionJSON }}
+          echo '${{ github.event.client_payload.versionJSON }}'
