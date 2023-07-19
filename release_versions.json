@@ -7,5 +7,6 @@
     "amd64_exchange-api": "2.117.0-1163",
     "amd64_vault": "1.1.2-806",
     "fdo-owner-services": "1.2.0-277",
-    "sdo-owner-services": "1.11.16-1083"
+    "sdo-owner-services": "1.11.16-1083",
+    "date_created": "Test Date"
 }
