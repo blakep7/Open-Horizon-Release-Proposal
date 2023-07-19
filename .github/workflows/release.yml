@@ -29,11 +29,11 @@ jobs:
         id: test1
         run: |
           cd ${GITHUB_WORKSPACE}
-          echo "AGBOT_VERSION=$(jq -r '[".amd64_agbot"]' $VERSION_SPECIFICATION_FILE_PATH)" >> "$GITHUB_OUTPUT"
-          echo "ANAX_VERSION=$(jq -r '[".amd64_anax"]' $VERSION_SPECIFICATION_FILE_PATH)" >> "$GITHUB_OUTPUT"
-          echo "ANAX_K8S_VERSION=$(jq -r '[".amd64_anax_k8s"]' $VERSION_SPECIFICATION_FILE_PATH)" >> "$GITHUB_OUTPUT"
-          echo "ANAX_CSS_VERSION=$(jq -r '[".amd64_cloud-sync-service"]' $VERSION_SPECIFICATION_FILE_PATH)" >> "$GITHUB_OUTPUT"
-          echo "ANAX_ESS_VERSION=$(jq -r '[".amd64_edge-sync-service"]' $VERSION_SPECIFICATION_FILE_PATH)" >> "$GITHUB_OUTPUT"
+          echo "AGBOT_VERSION=$(jq -r '.["amd64_agbot"]' $VERSION_SPECIFICATION_FILE_PATH)" >> "$GITHUB_OUTPUT"
+          echo "ANAX_VERSION=$(jq -r '.["amd64_anax"]' $VERSION_SPECIFICATION_FILE_PATH)" >> "$GITHUB_OUTPUT"
+          echo "ANAX_K8S_VERSION=$(jq -r '.["amd64_anax_k8s"]' $VERSION_SPECIFICATION_FILE_PATH)" >> "$GITHUB_OUTPUT"
+          echo "ANAX_CSS_VERSION=$(jq -r '.["amd64_cloud-sync-service"]' $VERSION_SPECIFICATION_FILE_PATH)" >> "$GITHUB_OUTPUT"
+          echo "ANAX_ESS_VERSION=$(jq -r '.["amd64_edge-sync-service"]' $VERSION_SPECIFICATION_FILE_PATH)" >> "$GITHUB_OUTPUT"
 
       - name: Test 2
         run: |
