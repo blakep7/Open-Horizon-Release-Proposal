@@ -83,6 +83,8 @@ jobs:
             'https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/workflows/${{ env.ANAX_RELEASE_MANAGER_FILE_NAME }}/dispatches' \
             -d '{"ref":"dev-release-mgmt","inputs":{"AGBOT_VERSION": "${{ env.AGBOT_VERSION }}","ANAX_VERSION": "${{ env.ANAX_VERSION }}","ANAX_K8S_VERSION": "${{ env.ANAX_K8S_VERSION }}","ANAX_CSS_VERSION": "${{ env.ANAX_CSS_VERSION }}","ANAX_ESS_VERSION": "${{ env.ANAX_ESS_VERSION }}"}}'
 
+          sleep 30
+
           # List most recent triggered workflows that are waiting for a deployment review, use jq to filter down to release runs created today
           ANAX_RELEASE_RUN_ID=$( \
             curl -L \
@@ -92,6 +94,8 @@ jobs:
               'https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/runs?status=waiting&event=workflow_dispatch&per_page=10&page=1' \
               | \
               jq -r '[.workflow_runs[] | select( .path == ".github/workflows/${{ env.ANAX_RELEASE_MANAGER_FILE_NAME }}" )][0].id')
+
+          sleep 30
 
           # Approve workflow run automatically as this workflow run was approved
           ACCEPT_ANAX_RELEASE_API_CALL_DATA=$(jq -c -n '{"environment_ids":[$ARGS.positional[]],"state":"approved","comment":"Triggered automatically via approval from open-horizon/release"}' --jsonargs $ANAX_RELEASE_ENVIRONMENT_ID)
@@ -103,6 +107,8 @@ jobs:
             -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
             "https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/runs/${ANAX_RELEASE_RUN_ID}/pending_deployments" \
             -d "${ACCEPT_ANAX_RELEASE_API_CALL_DATA}"
+
+          sleep 30
 
           # Wait until the Anax Release Manager has succeeded
           check_status () {
@@ -127,6 +133,8 @@ jobs:
               exit 1
             fi
           done
+
+          sleep 30
 
           ANAX_RELEASE_CONCLUSION=$( \
               curl -L \
