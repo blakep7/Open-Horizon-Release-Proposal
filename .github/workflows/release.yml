@@ -51,6 +51,9 @@ env:
   ANAX_RELEASE_MANAGER_FILE_NAME: release.yml
   ANAX_RELEASE_ENVIRONMENT_NAME: release_environment
 
+  # Needs 'repo' scope for anax
+  OPENHORIZON_ORGANIZATION_RELEASE_TOKEN: ${{ secrets.OPENHORIZON_ORGANIZATION_RELEASE_TOKEN }}
+
 jobs:
 
   release:
@@ -65,7 +68,7 @@ jobs:
             ANAX_RELEASE_ENVIRONMENT_ID=$( \
               curl -L \
                 -H "Accept: application/vnd.github+json" \
-                -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+                -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
                 -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
                 'https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/environments/${{ env.ANAX_RELEASE_ENVIRONMENT_NAME }}' \
                 | \
@@ -75,7 +78,7 @@ jobs:
           curl -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
             -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
             'https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/workflows/${{ env.ANAX_RELEASE_MANAGER_FILE_NAME }}/dispatches' \
             -d '{"ref":"dev-release-mgmt","inputs":{"AGBOT_VERSION": "${{ env.AGBOT_VERSION }}","ANAX_VERSION": "${{ env.ANAX_VERSION }}","ANAX_K8S_VERSION": "${{ env.ANAX_K8S_VERSION }}","ANAX_CSS_VERSION": "${{ env.ANAX_CSS_VERSION }}","ANAX_ESS_VERSION": "${{ env.ANAX_ESS_VERSION }}"}}'
@@ -84,7 +87,7 @@ jobs:
           ANAX_RELEASE_RUN_ID=$( \
             curl -L \
               -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+              -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
               -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
               'https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/runs?status=waiting&event=workflow_dispatch&per_page=10&page=1' \
               | \
@@ -96,7 +99,7 @@ jobs:
           curl -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
             -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
             "https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/runs/${ANAX_RELEASE_RUN_ID}/pending_deployments" \
             -d "${ACCEPT_ANAX_RELEASE_API_CALL_DATA}"
@@ -106,7 +109,7 @@ jobs:
           ANAX_RELEASE_STATUS=$( \
             curl -L \
               -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${GITHUB_TOKEN}"\
+              -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}"\
               -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
               "https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/runs/${ANAX_RELEASE_RUN_ID}" \
               | \
@@ -128,7 +131,7 @@ jobs:
           ANAX_RELEASE_CONCLUSION=$( \
               curl -L \
                 -H "Accept: application/vnd.github+json" \
-                -H "Authorization: Bearer ${GITHUB_TOKEN}"\
+                -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}"\
                 -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
                 "https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/runs/${ANAX_RELEASE_RUN_ID}" \
                 | \
