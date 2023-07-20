@@ -82,7 +82,12 @@ jobs:
       #         | \
       #         jq -r '.id')
       #     echo "::debug::Finish \"Get Anax Release Environment ID\" API Call"
-
+      
+      #     if [[ -z "$ANAX_RELEASE_ENVIRONMENT_ID" ]]; then
+      #       echo "::error::Failed to get Anax Release Environment ID, check API Call"
+      #       exit 1
+      #     fi
+      
       #     # Trigger Anax Release Manager
       #     echo "::debug::Start \"Trigger Anax Release Manager\" API Call"
       #     STATUS_CHECK_ONE=$( \
@@ -115,6 +120,11 @@ jobs:
       #         | \
       #         jq -r '[.workflow_runs[] | select( .path == ".github/workflows/${{ env.ANAX_RELEASE_MANAGER_FILE_NAME }}" )][0].id')
       #     echo "::debug::Finish \"Get Anax Release Run ID\" API Call"
+
+      #     if [[ -z "$ANAX_RELEASE_RUN_ID" ]]; then
+      #       echo "::error::Failed to get Anax Release Run ID, check API Call"
+      #       exit 1
+      #     fi
 
       #     sleep 30
 
@@ -258,9 +268,6 @@ jobs:
           # Approve workflow run automatically as this workflow run was approved
           echo "::debug::Start \"Approve Examples Release Workflow Dispatch\" API Call"
           ACCEPT_EXAMPLES_RELEASE_API_CALL_DATA=$(jq -c -n '{"environment_ids":[$ARGS.positional[]],"state":"approved","comment":"Triggered automatically via approval from open-horizon/release"}' --jsonargs $EXAMPLES_RELEASE_ENVIRONMENT_ID)
-
-          echo "https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/actions/runs/${EXAMPLES_RELEASE_RUN_ID}/pending_deployments"
-          echo "$ACCEPT_EXAMPLES_RELEASE_API_CALL_DATA)"
 
           STATUS_CHECK_TWO=$( \
             curl -L \
