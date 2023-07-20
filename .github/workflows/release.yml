@@ -209,6 +209,8 @@ jobs:
 
           # Trigger Examples Release Manager
           echo "::debug::Start \"Trigger Examples Release Manager\" API Call"
+          TRIGGER_EXAMPLES_RELEASE_API_CALL_DATA=$(jq -c -n '{"event_type":"release-trigger","client_payload":{"versionJSON":$jsonpayload}}' --arg jsonpayload "${JSON_PAYLOAD//\"/\\\"}")
+
           STATUS_CHECK_ONE=$( \
             curl -L \
               -w "%{http_code}\\n" \
@@ -217,7 +219,7 @@ jobs:
               -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
               -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
               https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/dispatches \
-              -d '{"event_type":"release-trigger","client_payload":{"versionJSON":"${{ github.event.client_payload.versionJSON }}"}}')
+              -d "${TRIGGER_EXAMPLES_RELEASE_API_CALL_DATA}"")
 
           if [[ "${STATUS_CHECK_ONE}" != *"204"* ]]; then
             echo "::error::Examples workflow dispatch API call returned bad status code"
