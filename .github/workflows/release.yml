@@ -56,6 +56,7 @@ env:
   EXAMPLES_REPOSITORY_NAME: examples
   EXAMPLES_RELEASE_MANAGER_FILE_NAME: release.yml
   EXAMPLES_RELEASE_ENVIRONMENT_NAME: release_environment
+  EXAMPLES_RELEASE_MANAGER_BRANCH: dev-release-mgmt
 
   # Needs 'repo' scope for anax
   OPENHORIZON_ORGANIZATION_RELEASE_TOKEN: ${{ secrets.OPENHORIZON_ORGANIZATION_RELEASE_TOKEN }}
@@ -209,7 +210,7 @@ jobs:
 
           # Trigger Examples Release Manager
           echo "::debug::Start \"Trigger Examples Release Manager\" API Call"
-          TRIGGER_EXAMPLES_RELEASE_API_CALL_DATA=$(jq -c -n '{"event_type":"release-trigger","client_payload":{"versionJSON":$jsonpayload}}' --arg jsonpayload "${JSON_PAYLOAD//\"/\\\"}")
+          TRIGGER_EXAMPLES_RELEASE_API_CALL_DATA=$(jq -c -n '{"ref":"${{ env.EXAMPLES_RELEASE_MANAGER_BRANCH }}","inputs":{"versionFileJSON": $jsonpayload}}' --arg jsonpayload "${JSON_PAYLOAD//\"/\\\"}")
 
           STATUS_CHECK_ONE=$( \
             curl -L \
@@ -218,7 +219,7 @@ jobs:
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
               -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
-              https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/dispatches \
+              https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/actions/workflows/${{ env.EXAMPLES_RELEASE_MANAGER_FILE_NAME }}/dispatches \
               -d "${TRIGGER_EXAMPLES_RELEASE_API_CALL_DATA}")
 
           if [[ "${STATUS_CHECK_ONE}" != *"204"* ]]; then
