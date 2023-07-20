@@ -313,3 +313,5 @@ jobs:
 
           echo "::debug::Step Success"
         shell: bash
+        env:
+          JSON_PAYLOAD: ${{ github.event.client_payload.versionJSON }}
