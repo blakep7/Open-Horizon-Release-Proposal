@@ -219,7 +219,7 @@ jobs:
               -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
               -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
               https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/dispatches \
-              -d "${TRIGGER_EXAMPLES_RELEASE_API_CALL_DATA}"")
+              -d "${TRIGGER_EXAMPLES_RELEASE_API_CALL_DATA}")
 
           if [[ "${STATUS_CHECK_ONE}" != *"204"* ]]; then
             echo "::error::Examples workflow dispatch API call returned bad status code"
