@@ -249,6 +249,9 @@ jobs:
           echo "::debug::Start \"Approve Examples Release Workflow Dispatch\" API Call"
           ACCEPT_EXAMPLES_RELEASE_API_CALL_DATA=$(jq -c -n '{"environment_ids":[$ARGS.positional[]],"state":"approved","comment":"Triggered automatically via approval from open-horizon/release"}' --jsonargs $EXAMPLES_RELEASE_ENVIRONMENT_ID)
 
+          echo "https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/actions/runs/${EXAMPLES_RELEASE_RUN_ID}/pending_deployments"
+          echo "$ACCEPT_EXAMPLES_RELEASE_API_CALL_DATA)"
+
           STATUS_CHECK_TWO=$( \
             curl -L \
               -w "%{http_code}\\n" \
