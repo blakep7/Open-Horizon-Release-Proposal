@@ -208,6 +208,11 @@ jobs:
               jq -r '.id')
           echo "::debug::Finish \"Get Examples Release Environment ID\" API Call"
 
+          if [[ -z "$EXAMPLES_RELEASE_ENVIRONMENT_ID" ]]; then
+            echo "::error::Failed to get Examples Release Environment ID, check API Call"
+            exit 1
+          fi
+
           # Trigger Examples Release Manager
           echo "::debug::Start \"Trigger Examples Release Manager\" API Call"
           TRIGGER_EXAMPLES_RELEASE_API_CALL_DATA=$(jq -c -n '{"ref":"${{ env.EXAMPLES_RELEASE_MANAGER_BRANCH }}","inputs":{"versionFileJSON": $jsonpayload}}' --arg jsonpayload "${JSON_PAYLOAD//\"/\\\"}")
@@ -238,10 +243,15 @@ jobs:
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
               -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
-              'https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/actions/runs?status=waiting&event=release-trigger&per_page=10&page=1' \
+              'https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/actions/runs?status=waiting&event=workflow_dispatch&per_page=10&page=1' \
               | \
               jq -r '[.workflow_runs[] | select( .path == ".github/workflows/${{ env.EXAMPLES_RELEASE_MANAGER_FILE_NAME }}" )][0].id')
           echo "::debug::Finish \"Get Examples Release Run ID\" API Call"
+
+          if [[ -z "$EXAMPLES_RELEASE_RUN_ID" ]]; then
+            echo "::error::Failed to get Examples Release Run ID, check API Call"
+            exit 1
+          fi
 
           sleep 30
 
