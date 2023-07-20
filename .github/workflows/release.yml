@@ -225,7 +225,7 @@ jobs:
 
           # Trigger Examples Release Manager
           echo "::debug::Start \"Trigger Examples Release Manager\" API Call"
-          TRIGGER_EXAMPLES_RELEASE_API_CALL_DATA=$(jq -c -n '{"ref":"${{ env.EXAMPLES_RELEASE_MANAGER_BRANCH }}","inputs":{"versionFileJSON": $jsonpayload}}' --arg jsonpayload "${JSON_PAYLOAD//\"/\\\"}")
+          TRIGGER_EXAMPLES_RELEASE_API_CALL_DATA=$(jq -c -n '{"ref":"${{ env.EXAMPLES_RELEASE_MANAGER_BRANCH }}","inputs":{"versionFileJSON": $jsonpayload}}' --arg jsonpayload "${JSON_PAYLOAD//\"/\"}")
 
           STATUS_CHECK_ONE=$( \
             curl -L \
