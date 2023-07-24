@@ -12,7 +12,7 @@ on:
     types: [release-trigger]
 
 env:
-  VERSION_JSON_FILE: ${{ github.event == 'workflow_dispatch' && github.event.inputs.versionJSON || github.event.client_payload.versionJSON }}
+  VERSION_JSON_FILE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.versionJSON || github.event.client_payload.versionJSON }}
 
   GITHUB_REST_API_VERSION: 2022-11-28
   # Anax repo release manager variables
@@ -41,19 +41,19 @@ jobs:
     steps:
       - name: Test
         run: |
-          echo ${{github.event}}
+          echo ${{github.event_name}}
           echo -e $VERSION_JSON_FILE
-          # echo $AGBOT_VERSION
-          # echo $ANAX_VERSION
-          # echo $ANAX_K8S_VERSION
-          # echo $ANAX_CSS_VERSION
-          # echo $ANAX_ESS_VERSION
-        # env:
-        #   AGBOT_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_agbot }}
-        #   ANAX_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_anax }}
-        #   ANAX_K8S_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_anax_k8s }}
-        #   ANAX_CSS_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_cloud-sync-service }}
-        #   ANAX_ESS_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_edge-sync-service }}
+          echo $AGBOT_VERSION
+          echo $ANAX_VERSION
+          echo $ANAX_K8S_VERSION
+          echo $ANAX_CSS_VERSION
+          echo $ANAX_ESS_VERSION
+        env:
+          AGBOT_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_agbot }}
+          ANAX_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_anax }}
+          ANAX_K8S_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_anax_k8s }}
+          ANAX_CSS_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_cloud-sync-service }}
+          ANAX_ESS_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_edge-sync-service }}
       # - name: Trigger Anax Release Manager
       #   run: |
       #     # Get Anax Release Environment ID
