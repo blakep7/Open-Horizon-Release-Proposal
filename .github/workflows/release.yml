@@ -3,40 +3,8 @@ name: Open Horizon Release Manager
 on:
   workflow_dispatch:
     inputs:
-      AGBOT_VERSION:
-        description: 'Version of Agbot Image to be released, with build number'
-        required: true
-        type: string
-      ANAX_VERSION:
-        description: 'Version of Anax Images and Packages to be released, with build number'
-        required: true
-        type: string
-      ANAX_K8S_VERSION:
-        description: 'Version of Anax K8s Images to be released, with build number'
-        required: true
-        type: string
-      ANAX_CSS_VERSION:
-        description: 'Version of CSS Image to be released, with build number'
-        required: true
-        type: string
-      ANAX_ESS_VERSION:
-        description: 'Version of ESS Image to be released, with build number'
-        required: true
-        type: string
-      EXCHANGE_VERSION:
-        description: 'Version of Exchange Image to be released, with build number'
-        required: true
-        type: string
-      VAULT_VERSION:
-        description: 'Version of Vault Image to be released, with build number'
-        required: true
-        type: string
-      FDO_VERSION:
-        description: 'Version of FDO Image to be released, with build number'
-        required: true
-        type: string
-      SDO_VERSION:
-        description: 'Version of SDO Image to be released, with build number'
+      versionJSON:
+        description: "The version json file, check the ReadME for formatting instructions if you are attempting to generate it yourself"
         required: true
         type: string
 
@@ -44,21 +12,23 @@ on:
     types: [release-trigger]
 
 env:
-  GITHUB_REST_API_VERSION: 2022-11-28
+  VERSION_JSON_FILE: ${{ github.event == 'workflow_dispatch' && github.event.inputs.versionJSON || github.event.client_payload.versionJSON }}
 
+  GITHUB_REST_API_VERSION: 2022-11-28
+  # Anax repo release manager variables
   ANAX_REPOSITORY_OWNER: ${{ github.repository_owner }}
   ANAX_REPOSITORY_NAME: anax
   ANAX_RELEASE_MANAGER_FILE_NAME: release.yml
   ANAX_RELEASE_ENVIRONMENT_NAME: release_environment
   ANAX_RELEASE_MANAGER_BRANCH: dev-release-mgmt
-
+  # Examples repo release manager variables
   EXAMPLES_REPOSITORY_OWNER: ${{ github.repository_owner }}
   EXAMPLES_REPOSITORY_NAME: examples
   EXAMPLES_RELEASE_MANAGER_FILE_NAME: release.yml
   EXAMPLES_RELEASE_ENVIRONMENT_NAME: release_environment
   EXAMPLES_RELEASE_MANAGER_BRANCH: dev-release-mgmt
 
-  # Needs 'repo' scope for anax
+  # Needs 'repo' scope for org or anax
   OPENHORIZON_ORGANIZATION_RELEASE_TOKEN: ${{ secrets.OPENHORIZON_ORGANIZATION_RELEASE_TOKEN }}
 
 jobs:
@@ -69,270 +39,288 @@ jobs:
     environment: release_environment
 
     steps:
-      - name: Trigger Anax Release Manager
+      - name: Test
         run: |
-          # Get Anax Release Environment ID
-          echo "::debug::Start \"Get Anax Release Environment ID\" API Call"
-          ANAX_RELEASE_ENVIRONMENT_ID=$( \
-            curl -L \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
-              -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
-              'https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/environments/${{ env.ANAX_RELEASE_ENVIRONMENT_NAME }}' \
-              | \
-              jq -r '.id')
-          echo "::debug::Finish \"Get Anax Release Environment ID\" API Call"
-      
-          if [[ -z "$ANAX_RELEASE_ENVIRONMENT_ID" ]]; then
-            echo "::error::Failed to get Anax Release Environment ID, check API Call"
-            exit 1
-          fi
-      
-          # Trigger Anax Release Manager
-          echo "::debug::Start \"Trigger Anax Release Manager\" API Call"
-          STATUS_CHECK_ONE=$( \
-            curl -L \
-              -w "%{http_code}\\n" \
-              -X POST \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
-              -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
-              'https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/workflows/${{ env.ANAX_RELEASE_MANAGER_FILE_NAME }}/dispatches' \
-              -d '{"ref":"${{ env.ANAX_RELEASE_MANAGER_BRANCH }}","inputs":{"AGBOT_VERSION": "${{ env.AGBOT_VERSION }}","ANAX_VERSION": "${{ env.ANAX_VERSION }}","ANAX_K8S_VERSION": "${{ env.ANAX_K8S_VERSION }}","ANAX_CSS_VERSION": "${{ env.ANAX_CSS_VERSION }}","ANAX_ESS_VERSION": "${{ env.ANAX_ESS_VERSION }}"}}')
-
-          if [[ "${STATUS_CHECK_ONE}" != *"204"* ]]; then
-            echo "::error::Anax workflow dispatch API call returned bad status code"
-            echo -e "Status:\n${STATUS_CHECK_ONE}"
-            exit 1
-          fi
-          echo "::debug::Finish \"Trigger Anax Release Manager\" API Call"
-
-          sleep 30
-
-          # List most recent triggered workflows that are waiting for a deployment review, use jq to filter down to release runs created today
-          echo "::debug::Start \"Get Anax Release Run ID\" API Call"
-          ANAX_RELEASE_RUN_ID=$( \
-            curl -L \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
-              -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
-              'https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/runs?status=waiting&event=workflow_dispatch&per_page=10&page=1' \
-              | \
-              jq -r '[.workflow_runs[] | select( .path == ".github/workflows/${{ env.ANAX_RELEASE_MANAGER_FILE_NAME }}" )][0].id')
-          echo "::debug::Finish \"Get Anax Release Run ID\" API Call"
-
-          if [[ -z "$ANAX_RELEASE_RUN_ID" ]]; then
-            echo "::error::Failed to get Anax Release Run ID, check API Call"
-            exit 1
-          fi
-
-          sleep 30
-
-          # Approve workflow run automatically as this workflow run was approved
-          echo "::debug::Start \"Approve Anax Release Workflow Dispatch\" API Call"
-          ACCEPT_ANAX_RELEASE_API_CALL_DATA=$(jq -c -n '{"environment_ids":[$ARGS.positional[]],"state":"approved","comment":"Triggered automatically via approval from open-horizon/release"}' --jsonargs $ANAX_RELEASE_ENVIRONMENT_ID)
-
-          STATUS_CHECK_TWO=$( \
-            curl -L \
-              -w "%{http_code}\\n" \
-              -X POST \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
-              -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
-              "https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/runs/${ANAX_RELEASE_RUN_ID}/pending_deployments" \
-              -d "${ACCEPT_ANAX_RELEASE_API_CALL_DATA}")
-          
-          if [[ "${STATUS_CHECK_TWO}" != *"200"* ]]; then
-            echo "::error::Anax approve workflow dispatch API call returned bad status code"
-            echo -e "Status:\n${STATUS_CHECK_TWO}"
-            exit 1
-          fi
-          echo "::debug::Finish \"Approve Anax Release Workflow Dispatch\" API Call"
-
-          sleep 30
-
-          # Wait until the Anax Release Manager has succeeded
-          echo "::debug::Start \"Wait for Anax Release Manager to Succeed\" API Call"
-          check_status () {
-          ANAX_RELEASE_STATUS=$( \
-            curl -L \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}"\
-              -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
-              "https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/runs/${ANAX_RELEASE_RUN_ID}" \
-              | \
-              jq -r '.status')
-          }
-
-          max_iterations=5
-          check_status
-          while [[ "${ANAX_RELEASE_STATUS}" != "completed" ]]; do
-            sleep 360 #Release manager typically takes around 5.5 minutes
-            check_status
-            max_iterations=$((max_iterations-1))
-            if [[ "$max_iterations" -le "0" ]]; then
-              echo "::error::Anax Release Manager seems to be stuck, status won't hit completion"
-              exit 1
-            fi
-          done
-          echo "::debug::Finish \"Wait for Anax Release Manager to Succeed\" API Call"
-
-          sleep 30
-
-          echo "::debug::Start \"Get Success Status of Anax Release Workflow\" API Call"
-          ANAX_RELEASE_CONCLUSION=$( \
-              curl -L \
-                -H "Accept: application/vnd.github+json" \
-                -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}"\
-                -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
-                "https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/runs/${ANAX_RELEASE_RUN_ID}" \
-                | \
-                jq -r '.conclusion')
-          
-          if [[ "${ANAX_RELEASE_CONCLUSION}" != "success" ]]; then
-              echo "::error::Anax Release Manager appears to have failed or been cancelled"
-              exit 1
-          fi
-          echo "::debug::Finish \"Get Success Status of Anax Release Workflow\" API Call"
-
-          echo "::debug::Step Success"
-        shell: bash
+          echo -e $VERSION_JSON_FILE
+          echo $AGBOT_VERSION
+          echo $ANAX_VERSION
+          echo $ANAX_K8S_VERSION
+          echo $ANAX_CSS_VERSION
+          echo $ANAX_ESS_VERSION
         env:
-          AGBOT_VERSION: ${{ fromJSON(github.event.client_payload.versionJSON).amd64_agbot }}
-          ANAX_VERSION: ${{ fromJSON(github.event.client_payload.versionJSON).amd64_anax }}
-          ANAX_K8S_VERSION: ${{ fromJSON(github.event.client_payload.versionJSON).amd64_anax_k8s }}
-          ANAX_CSS_VERSION: ${{ fromJSON(github.event.client_payload.versionJSON).amd64_cloud-sync-service }}
-          ANAX_ESS_VERSION: ${{ fromJSON(github.event.client_payload.versionJSON).amd64_edge-sync-service }}
+          AGBOT_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_agbot }}
+          ANAX_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_anax }}
+          ANAX_K8S_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_anax_k8s }}
+          ANAX_CSS_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_cloud-sync-service }}
+          ANAX_ESS_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_edge-sync-service }}
+      # - name: Trigger Anax Release Manager
+      #   run: |
+      #     # Get Anax Release Environment ID
+      #     echo "::debug::Start \"Get Anax Release Environment ID\" API Call"
+      #     ANAX_RELEASE_ENVIRONMENT_ID=$( \
+      #       curl -L \
+      #         -H "Accept: application/vnd.github+json" \
+      #         -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
+      #         -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
+      #         'https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/environments/${{ env.ANAX_RELEASE_ENVIRONMENT_NAME }}' \
+      #         | \
+      #         jq -r '.id')
+      #     echo "::debug::Finish \"Get Anax Release Environment ID\" API Call"
+      
+      #     if [[ -z "$ANAX_RELEASE_ENVIRONMENT_ID" ]]; then
+      #       echo "::error::Failed to get Anax Release Environment ID, check API Call"
+      #       exit 1
+      #     fi
+      
+      #     # Trigger Anax Release Manager
+      #     echo "::debug::Start \"Trigger Anax Release Manager\" API Call"
+      #     STATUS_CHECK_ONE=$( \
+      #       curl -L \
+      #         -w "%{http_code}\\n" \
+      #         -X POST \
+      #         -H "Accept: application/vnd.github+json" \
+      #         -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
+      #         -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
+      #         'https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/workflows/${{ env.ANAX_RELEASE_MANAGER_FILE_NAME }}/dispatches' \
+      #         -d '{"ref":"${{ env.ANAX_RELEASE_MANAGER_BRANCH }}","inputs":{"AGBOT_VERSION": "${{ env.AGBOT_VERSION }}","ANAX_VERSION": "${{ env.ANAX_VERSION }}","ANAX_K8S_VERSION": "${{ env.ANAX_K8S_VERSION }}","ANAX_CSS_VERSION": "${{ env.ANAX_CSS_VERSION }}","ANAX_ESS_VERSION": "${{ env.ANAX_ESS_VERSION }}"}}')
 
-      - name: Trigger Examples Release Manager
-        run: |
-          # Get Examples Release Environment ID
-          echo "::debug::Start \"Get Examples Release Environment ID\" API Call"
-          EXAMPLES_RELEASE_ENVIRONMENT_ID=$( \
-            curl -L \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
-              -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
-              'https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/environments/${{ env.EXAMPLES_RELEASE_ENVIRONMENT_NAME }}' \
-              | \
-              jq -r '.id')
-          echo "::debug::Finish \"Get Examples Release Environment ID\" API Call"
+      #     if [[ "${STATUS_CHECK_ONE}" != *"204"* ]]; then
+      #       echo "::error::Anax workflow dispatch API call returned bad status code"
+      #       echo -e "Status:\n${STATUS_CHECK_ONE}"
+      #       exit 1
+      #     fi
+      #     echo "::debug::Finish \"Trigger Anax Release Manager\" API Call"
 
-          if [[ -z "$EXAMPLES_RELEASE_ENVIRONMENT_ID" ]]; then
-            echo "::error::Failed to get Examples Release Environment ID, check API Call"
-            exit 1
-          fi
+      #     sleep 30
 
-          # Trigger Examples Release Manager
-          echo "::debug::Start \"Trigger Examples Release Manager\" API Call"
-          TRIGGER_EXAMPLES_RELEASE_API_CALL_DATA=$(jq -c -n '{"ref":"${{ env.EXAMPLES_RELEASE_MANAGER_BRANCH }}","inputs":{"versionFileJSON": $jsonpayload}}' --arg jsonpayload "${JSON_PAYLOAD//\"/\"}")
+      #     # List most recent triggered workflows that are waiting for a deployment review, use jq to filter down to release runs created today
+      #     echo "::debug::Start \"Get Anax Release Run ID\" API Call"
+      #     ANAX_RELEASE_RUN_ID=$( \
+      #       curl -L \
+      #         -H "Accept: application/vnd.github+json" \
+      #         -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
+      #         -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
+      #         'https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/runs?status=waiting&event=workflow_dispatch&per_page=10&page=1' \
+      #         | \
+      #         jq -r '[.workflow_runs[] | select( .path == ".github/workflows/${{ env.ANAX_RELEASE_MANAGER_FILE_NAME }}" )][0].id')
+      #     echo "::debug::Finish \"Get Anax Release Run ID\" API Call"
 
-          STATUS_CHECK_ONE=$( \
-            curl -L \
-              -w "%{http_code}\\n" \
-              -X POST \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
-              -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
-              https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/actions/workflows/${{ env.EXAMPLES_RELEASE_MANAGER_FILE_NAME }}/dispatches \
-              -d "${TRIGGER_EXAMPLES_RELEASE_API_CALL_DATA}")
+      #     if [[ -z "$ANAX_RELEASE_RUN_ID" ]]; then
+      #       echo "::error::Failed to get Anax Release Run ID, check API Call"
+      #       exit 1
+      #     fi
 
-          if [[ "${STATUS_CHECK_ONE}" != *"204"* ]]; then
-            echo "::error::Examples workflow dispatch API call returned bad status code"
-            echo -e "Status:\n${STATUS_CHECK_ONE}"
-            exit 1
-          fi
-          echo "::debug::Finish \"Trigger Examples Release Manager\" API Call"
+      #     sleep 30
 
-          sleep 30
+      #     # Approve workflow run automatically as this workflow run was approved
+      #     echo "::debug::Start \"Approve Anax Release Workflow Dispatch\" API Call"
+      #     ACCEPT_ANAX_RELEASE_API_CALL_DATA=$(jq -c -n '{"environment_ids":[$ARGS.positional[]],"state":"approved","comment":"Triggered automatically via approval from open-horizon/release"}' --jsonargs $ANAX_RELEASE_ENVIRONMENT_ID)
 
-          # List most recent triggered workflows that are waiting for a deployment review, use jq to filter down to release runs created today
-          echo "::debug::Start \"Get Examples Release Run ID\" API Call"
-          EXAMPLES_RELEASE_RUN_ID=$( \
-            curl -L \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
-              -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
-              'https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/actions/runs?status=waiting&event=workflow_dispatch&per_page=10&page=1' \
-              | \
-              jq -r '[.workflow_runs[] | select( .path == ".github/workflows/${{ env.EXAMPLES_RELEASE_MANAGER_FILE_NAME }}" )][0].id')
-          echo "::debug::Finish \"Get Examples Release Run ID\" API Call"
-
-          if [[ -z "$EXAMPLES_RELEASE_RUN_ID" ]]; then
-            echo "::error::Failed to get Examples Release Run ID, check API Call"
-            exit 1
-          fi
-
-          sleep 30
-
-          # Approve workflow run automatically as this workflow run was approved
-          echo "::debug::Start \"Approve Examples Release Workflow Dispatch\" API Call"
-          ACCEPT_EXAMPLES_RELEASE_API_CALL_DATA=$(jq -c -n '{"environment_ids":[$ARGS.positional[]],"state":"approved","comment":"Triggered automatically via approval from open-horizon/release"}' --jsonargs $EXAMPLES_RELEASE_ENVIRONMENT_ID)
-
-          STATUS_CHECK_TWO=$( \
-            curl -L \
-              -w "%{http_code}\\n" \
-              -X POST \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
-              -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
-              "https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/actions/runs/${EXAMPLES_RELEASE_RUN_ID}/pending_deployments" \
-              -d "${ACCEPT_EXAMPLES_RELEASE_API_CALL_DATA}")
+      #     STATUS_CHECK_TWO=$( \
+      #       curl -L \
+      #         -w "%{http_code}\\n" \
+      #         -X POST \
+      #         -H "Accept: application/vnd.github+json" \
+      #         -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
+      #         -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
+      #         "https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/runs/${ANAX_RELEASE_RUN_ID}/pending_deployments" \
+      #         -d "${ACCEPT_ANAX_RELEASE_API_CALL_DATA}")
           
-          if [[ "${STATUS_CHECK_TWO}" != *"200"* ]]; then
-            echo "::error::Examples approve workflow dispatch API call returned bad status code"
-            echo -e "Status:\n${STATUS_CHECK_TWO}"
-            exit 1
-          fi
-          echo "::debug::Finish \"Approve Examples Release Workflow Dispatch\" API Call"
+      #     if [[ "${STATUS_CHECK_TWO}" != *"200"* ]]; then
+      #       echo "::error::Anax approve workflow dispatch API call returned bad status code"
+      #       echo -e "Status:\n${STATUS_CHECK_TWO}"
+      #       exit 1
+      #     fi
+      #     echo "::debug::Finish \"Approve Anax Release Workflow Dispatch\" API Call"
 
-          sleep 30
+      #     sleep 30
 
-          # Wait until the Examples Release Manager has succeeded
-          echo "::debug::Start \"Wait for Examples Release Manager to Succeed\" API Call"
-          check_status () {
-          EXAMPLES_RELEASE_STATUS=$( \
-            curl -L \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}"\
-              -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
-              "https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/actions/runs/${EXAMPLES_RELEASE_RUN_ID}" \
-              | \
-              jq -r '.status')
-          }
+      #     # Wait until the Anax Release Manager has succeeded
+      #     echo "::debug::Start \"Wait for Anax Release Manager to Succeed\" API Call"
+      #     check_status () {
+      #     ANAX_RELEASE_STATUS=$( \
+      #       curl -L \
+      #         -H "Accept: application/vnd.github+json" \
+      #         -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}"\
+      #         -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
+      #         "https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/runs/${ANAX_RELEASE_RUN_ID}" \
+      #         | \
+      #         jq -r '.status')
+      #     }
 
-          max_iterations=5
-          check_status
-          while [[ "${EXAMPLES_RELEASE_STATUS}" != "completed" ]]; do
-            sleep 180 #Release manager typically takes around 2.5 minutes
-            check_status
-            max_iterations=$((max_iterations-1))
-            if [[ "$max_iterations" -le "0" ]]; then
-              echo "::error::Examples Release Manager seems to be stuck, status won't hit completion"
-              exit 1
-            fi
-          done
-          echo "::debug::Finish \"Wait for Examples Release Manager to Succeed\" API Call"
+      #     max_iterations=5
+      #     check_status
+      #     while [[ "${ANAX_RELEASE_STATUS}" != "completed" ]]; do
+      #       sleep 360 #Release manager typically takes around 5.5 minutes
+      #       check_status
+      #       max_iterations=$((max_iterations-1))
+      #       if [[ "$max_iterations" -le "0" ]]; then
+      #         echo "::error::Anax Release Manager seems to be stuck, status won't hit completion"
+      #         exit 1
+      #       fi
+      #     done
+      #     echo "::debug::Finish \"Wait for Anax Release Manager to Succeed\" API Call"
 
-          sleep 30
+      #     sleep 30
 
-          echo "::debug::Start \"Get Success Status of Examples Release Workflow\" API Call"
-          EXAMPLES_RELEASE_CONCLUSION=$( \
-              curl -L \
-                -H "Accept: application/vnd.github+json" \
-                -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}"\
-                -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
-                "https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/actions/runs/${EXAMPLES_RELEASE_RUN_ID}" \
-                | \
-                jq -r '.conclusion')
+      #     echo "::debug::Start \"Get Success Status of Anax Release Workflow\" API Call"
+      #     ANAX_RELEASE_CONCLUSION=$( \
+      #         curl -L \
+      #           -H "Accept: application/vnd.github+json" \
+      #           -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}"\
+      #           -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
+      #           "https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/runs/${ANAX_RELEASE_RUN_ID}" \
+      #           | \
+      #           jq -r '.conclusion')
           
-          if [[ "${EXAMPLES_RELEASE_CONCLUSION}" != "success" ]]; then
-              echo "::error::Examples Release Manager appears to have failed or been cancelled"
-              exit 1
-          fi
-          echo "::debug::Finish \"Get Success Status of Examples Release Workflow\" API Call"
+      #     if [[ "${ANAX_RELEASE_CONCLUSION}" != "success" ]]; then
+      #         echo "::error::Anax Release Manager appears to have failed or been cancelled"
+      #         exit 1
+      #     fi
+      #     echo "::debug::Finish \"Get Success Status of Anax Release Workflow\" API Call"
 
-          echo "::debug::Step Success"
-        shell: bash
-        env:
-          JSON_PAYLOAD: ${{ github.event.client_payload.versionJSON }}
+      #     echo "::debug::Step Success"
+      #   shell: bash
+      #   env:
+      #     AGBOT_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_agbot }}
+      #     ANAX_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_anax }}
+      #     ANAX_K8S_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_anax_k8s }}
+      #     ANAX_CSS_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_cloud-sync-service }}
+      #     ANAX_ESS_VERSION: ${{ fromJSON(env.VERSION_JSON_FILE).amd64_edge-sync-service }}
+
+      # - name: Trigger Examples Release Manager
+      #   run: |
+      #     # Get Examples Release Environment ID
+      #     echo "::debug::Start \"Get Examples Release Environment ID\" API Call"
+      #     EXAMPLES_RELEASE_ENVIRONMENT_ID=$( \
+      #       curl -L \
+      #         -H "Accept: application/vnd.github+json" \
+      #         -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
+      #         -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
+      #         'https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/environments/${{ env.EXAMPLES_RELEASE_ENVIRONMENT_NAME }}' \
+      #         | \
+      #         jq -r '.id')
+      #     echo "::debug::Finish \"Get Examples Release Environment ID\" API Call"
+
+      #     if [[ -z "$EXAMPLES_RELEASE_ENVIRONMENT_ID" ]]; then
+      #       echo "::error::Failed to get Examples Release Environment ID, check API Call"
+      #       exit 1
+      #     fi
+
+      #     # Trigger Examples Release Manager
+      #     echo "::debug::Start \"Trigger Examples Release Manager\" API Call"
+      #     TRIGGER_EXAMPLES_RELEASE_API_CALL_DATA=$(jq -c -n '{"ref":"${{ env.EXAMPLES_RELEASE_MANAGER_BRANCH }}","inputs":{"versionFileJSON": $jsonpayload}}' --arg jsonpayload "${JSON_PAYLOAD//\"/\"}")
+
+      #     STATUS_CHECK_ONE=$( \
+      #       curl -L \
+      #         -w "%{http_code}\\n" \
+      #         -X POST \
+      #         -H "Accept: application/vnd.github+json" \
+      #         -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
+      #         -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
+      #         https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/actions/workflows/${{ env.EXAMPLES_RELEASE_MANAGER_FILE_NAME }}/dispatches \
+      #         -d "${TRIGGER_EXAMPLES_RELEASE_API_CALL_DATA}")
+
+      #     if [[ "${STATUS_CHECK_ONE}" != *"204"* ]]; then
+      #       echo "::error::Examples workflow dispatch API call returned bad status code"
+      #       echo -e "Status:\n${STATUS_CHECK_ONE}"
+      #       exit 1
+      #     fi
+      #     echo "::debug::Finish \"Trigger Examples Release Manager\" API Call"
+
+      #     sleep 30
+
+      #     # List most recent triggered workflows that are waiting for a deployment review, use jq to filter down to release runs created today
+      #     echo "::debug::Start \"Get Examples Release Run ID\" API Call"
+      #     EXAMPLES_RELEASE_RUN_ID=$( \
+      #       curl -L \
+      #         -H "Accept: application/vnd.github+json" \
+      #         -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
+      #         -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
+      #         'https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/actions/runs?status=waiting&event=workflow_dispatch&per_page=10&page=1' \
+      #         | \
+      #         jq -r '[.workflow_runs[] | select( .path == ".github/workflows/${{ env.EXAMPLES_RELEASE_MANAGER_FILE_NAME }}" )][0].id')
+      #     echo "::debug::Finish \"Get Examples Release Run ID\" API Call"
+
+      #     if [[ -z "$EXAMPLES_RELEASE_RUN_ID" ]]; then
+      #       echo "::error::Failed to get Examples Release Run ID, check API Call"
+      #       exit 1
+      #     fi
+
+      #     sleep 30
+
+      #     # Approve workflow run automatically as this workflow run was approved
+      #     echo "::debug::Start \"Approve Examples Release Workflow Dispatch\" API Call"
+      #     ACCEPT_EXAMPLES_RELEASE_API_CALL_DATA=$(jq -c -n '{"environment_ids":[$ARGS.positional[]],"state":"approved","comment":"Triggered automatically via approval from open-horizon/release"}' --jsonargs $EXAMPLES_RELEASE_ENVIRONMENT_ID)
+
+      #     STATUS_CHECK_TWO=$( \
+      #       curl -L \
+      #         -w "%{http_code}\\n" \
+      #         -X POST \
+      #         -H "Accept: application/vnd.github+json" \
+      #         -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}" \
+      #         -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
+      #         "https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/actions/runs/${EXAMPLES_RELEASE_RUN_ID}/pending_deployments" \
+      #         -d "${ACCEPT_EXAMPLES_RELEASE_API_CALL_DATA}")
+          
+      #     if [[ "${STATUS_CHECK_TWO}" != *"200"* ]]; then
+      #       echo "::error::Examples approve workflow dispatch API call returned bad status code"
+      #       echo -e "Status:\n${STATUS_CHECK_TWO}"
+      #       exit 1
+      #     fi
+      #     echo "::debug::Finish \"Approve Examples Release Workflow Dispatch\" API Call"
+
+      #     sleep 30
+
+      #     # Wait until the Examples Release Manager has succeeded
+      #     echo "::debug::Start \"Wait for Examples Release Manager to Succeed\" API Call"
+      #     check_status () {
+      #     EXAMPLES_RELEASE_STATUS=$( \
+      #       curl -L \
+      #         -H "Accept: application/vnd.github+json" \
+      #         -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}"\
+      #         -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
+      #         "https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/actions/runs/${EXAMPLES_RELEASE_RUN_ID}" \
+      #         | \
+      #         jq -r '.status')
+      #     }
+
+      #     max_iterations=5
+      #     check_status
+      #     while [[ "${EXAMPLES_RELEASE_STATUS}" != "completed" ]]; do
+      #       sleep 180 #Release manager typically takes around 2.5 minutes
+      #       check_status
+      #       max_iterations=$((max_iterations-1))
+      #       if [[ "$max_iterations" -le "0" ]]; then
+      #         echo "::error::Examples Release Manager seems to be stuck, status won't hit completion"
+      #         exit 1
+      #       fi
+      #     done
+      #     echo "::debug::Finish \"Wait for Examples Release Manager to Succeed\" API Call"
+
+      #     sleep 30
+
+      #     echo "::debug::Start \"Get Success Status of Examples Release Workflow\" API Call"
+      #     EXAMPLES_RELEASE_CONCLUSION=$( \
+      #         curl -L \
+      #           -H "Accept: application/vnd.github+json" \
+      #           -H "Authorization: Bearer ${OPENHORIZON_ORGANIZATION_RELEASE_TOKEN}"\
+      #           -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
+      #           "https://api.github.com/repos/${{ env.EXAMPLES_REPOSITORY_OWNER }}/${{ env.EXAMPLES_REPOSITORY_NAME }}/actions/runs/${EXAMPLES_RELEASE_RUN_ID}" \
+      #           | \
+      #           jq -r '.conclusion')
+          
+      #     if [[ "${EXAMPLES_RELEASE_CONCLUSION}" != "success" ]]; then
+      #         echo "::error::Examples Release Manager appears to have failed or been cancelled"
+      #         exit 1
+      #     fi
+      #     echo "::debug::Finish \"Get Success Status of Examples Release Workflow\" API Call"
+
+      #     echo "::debug::Step Success"
+      #   shell: bash
+      #   env:
+      #     JSON_PAYLOAD: ${{ env.VERSION_JSON_FILE }}
+
+      # - name: Create Release Version File
+      #   run: |
+      #     echo Placeholder 
