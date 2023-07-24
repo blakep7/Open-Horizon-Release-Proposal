@@ -41,6 +41,7 @@ jobs:
     steps:
       - name: Test
         run: |
+          echo ${{github.event}}
           echo -e $VERSION_JSON_FILE
           # echo $AGBOT_VERSION
           # echo $ANAX_VERSION
