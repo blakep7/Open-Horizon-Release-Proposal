@@ -324,8 +324,8 @@ jobs:
           ### Open Horizon 1.0.0 Release Information
           
           **Releases tied to v1.0.0** \n
-          - Anax: https://github.com/blakep7/anax/releases/tag/v2.31.0-1498
-          - Examples: https://github.com/blakep7/examples/releases/tag/v2.31.0-1498
+          - Anax: https://github.com/blakep7/anax/releases/tag/v${AGBOT_VERSION}
+          - Examples: https://github.com/blakep7/examples/releases/tag/v${AGBOT_VERSION}
           " > OH_RELEASE.txt
 
           gh release create v${{ vars.OPENHORIZON_RELEASE_VERSION }} \
