@@ -352,7 +352,11 @@ jobs:
             patch=0
             NEW_RELEASE="$major.$minor.$patch"
           elif [[ "$INCREMENT_PATCH_VERSION" = true ]]; then
+            echo "$OPENHORIZON_RELEASE_VERSION"
             IFS='.' read -r major minor patch <<< "$OPENHORIZON_RELEASE_VERSION"
+            echo "$major"
+            echo "$minor"
+            echo "$patch"
             ((patch++))
             NEW_RELEASE="$major.$minor.$patch"
           else
