@@ -371,9 +371,9 @@ jobs:
         run: |
           cd $RUNNER_TEMP
           printf "
-          ### Open Horizon 1.0.0 Release Information
+          ### Open Horizon ${{ steps.update_version.outputs.NEW_RELEASE }} Release Information
           
-          **Releases tied to v1.0.0** \n
+          **Releases tied to v${{ steps.update_version.outputs.NEW_RELEASE }}** \n
           - Anax: https://github.com/blakep7/anax/releases/tag/v${AGBOT_VERSION}
           - Examples: https://github.com/blakep7/examples/releases/tag/v${AGBOT_VERSION}
           " > OH_RELEASE.txt
