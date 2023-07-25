@@ -377,6 +377,13 @@ jobs:
             exit 1
           fi
 
+          sleep 30
+
+          if [[ "${{ vars.OPENHORIZON_RELEASE_VERSION }}" != "${NEW_RELEASE}" ]]; then
+            echo "::error::Failed to update release version"
+            exit 1
+          fi
+
         shell: bash
         env:
           OPENHORIZON_RELEASE_VERSION: ${{ vars.OPENHORIZON_RELEASE_VERSION }}
