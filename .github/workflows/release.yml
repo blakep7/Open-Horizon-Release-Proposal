@@ -318,6 +318,7 @@ jobs:
       #     JSON_PAYLOAD: ${{ github.event.inputs.VERSION_JSON_FILE }}
 
       - name: Increment Open Horizon Release Version
+        id: update_version
         run: |
           if [[ "$INCREMENT_MAJOR_VERSION" = true ]]; then
             IFS='.' read -r major minor patch <<< "$OPENHORIZON_RELEASE_VERSION"
@@ -336,8 +337,11 @@ jobs:
             NEW_RELEASE="$major.$minor.$patch"
           else
             echo "::warning::No version increment flag set."
+            NEW_RELEASE="$OPENHORIZON_RELEASE_VERSION"
             exit 0
           fi
+
+          echo "NEW_RELEASE=$NEW_RELEASE" >> "$GITHUB_OUTPUT"
 
           UPDATE_SEMANTIC_VERSION_DATA=$(jq -c -n '{"name":"OPENHORIZON_RELEASE_VERSION","value":$NEW_RELEASE}' --arg NEW_RELEASE "${NEW_RELEASE}")
 
@@ -374,8 +378,8 @@ jobs:
           - Examples: https://github.com/blakep7/examples/releases/tag/v${AGBOT_VERSION}
           " > OH_RELEASE.txt
 
-          gh release create v${{ vars.OPENHORIZON_RELEASE_VERSION }} \
-            -t "Open Horizon Release v${{ vars.OPENHORIZON_RELEASE_VERSION }}" \
+          gh release create v${{ steps.update_version.outputs.NEW_RELEASE }} \
+            -t "Open Horizon Release v${{ steps.update_version.outputs.NEW_RELEASE }}" \
             -F OH_RELEASE.txt
         env:
           AGBOT_VERSION: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_agbot }}
