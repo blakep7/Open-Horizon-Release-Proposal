@@ -370,8 +370,19 @@ jobs:
       - name: Create Open Horizon Release
         run: |
           cd $RUNNER_TEMP
-          printf "
-          ### Open Horizon ${{ steps.update_version.outputs.NEW_RELEASE }} Release Information
+          printf "Versions in this Release
+          Agbot: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_agbot }}
+          Anax: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_anax }}
+          Anax K8s: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_anax_k8s }}
+          Cloud Sync Service (CSS): ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_cloud-sync-service }}
+          Edge Sync Service (ESS): ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_edge-sync-service }}
+          Exchange API: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_exchange-api }}
+          Vault: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_vault }}
+          FDO: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).fdo-owner-services }}
+          SDO: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).sdo-owner-services }}
+          " > Released_Versions.txt
+
+          printf "### Open Horizon ${{ steps.update_version.outputs.NEW_RELEASE }} Release Information
           
           **Releases tied to v${{ steps.update_version.outputs.NEW_RELEASE }}** \n
           - Anax: https://github.com/blakep7/anax/releases/tag/v${AGBOT_VERSION}
@@ -379,6 +390,7 @@ jobs:
           " > OH_RELEASE.txt
 
           gh release create v${{ steps.update_version.outputs.NEW_RELEASE }} \
+            ${RUNNER_TEMP}/Released_Versions.txt \
             -t "Open Horizon Release v${{ steps.update_version.outputs.NEW_RELEASE }}" \
             -F OH_RELEASE.txt
         env:
