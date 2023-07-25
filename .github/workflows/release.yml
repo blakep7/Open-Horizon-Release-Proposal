@@ -339,18 +339,19 @@ jobs:
     
       - name: Increment Open Horizon Release Version
         run: |
-          if [ "$INCREMENT_MAJOR_VERSION" = true ]; then
+          echo "1"
+          if [[ "$INCREMENT_MAJOR_VERSION" = true ]]; then
             IFS='.' read -r major minor patch <<< "$OPENHORIZON_RELEASE_VERSION"
             ((major++))
             minor=0
             patch=0
             NEW_RELEASE="$major.$minor.$patch"
-          elif [ "$INCREMENT_MINOR_VERSION" = true ]; then
+          elif [[ "$INCREMENT_MINOR_VERSION" = true ]]; then
             IFS='.' read -r major minor patch <<< "$OPENHORIZON_RELEASE_VERSION"
             ((minor++))
             patch=0
             NEW_RELEASE="$major.$minor.$patch"
-          elif [ "$INCREMENT_PATCH_VERSION" = true ]; then
+          elif [[ "$INCREMENT_PATCH_VERSION" = true ]]; then
             IFS='.' read -r major minor patch <<< "$OPENHORIZON_RELEASE_VERSION"
             ((patch++))
             NEW_RELEASE="$major.$minor.$patch"
@@ -358,9 +359,9 @@ jobs:
             echo "::warning::No version increment flag set."
             exit 0
           fi
-
+          echo "2"
           UPDATE_SEMANTIC_VERSION_DATA=$(jq -c -n '{"name":"OPENHORIZON_RELEASE_VERSION","value":$NEW_RELEASE}' --arg NEW_RELEASE "${NEW_RELEASE}")
-
+          echo "3"
           STATUS_CHECK_UPDATE_VARIABLE=$( \
             curl -L \
               -w "%{http_code}\\n" \
@@ -370,12 +371,13 @@ jobs:
               -H "X-GitHub-Api-Version: ${GITHUB_REST_API_VERSION}" \
               https://api.github.com/repos/${{ github.repository }}/actions/variables/OPENHORIZON_RELEASE_VERSION \
               -d "${UPDATE_SEMANTIC_VERSION_DATA}")
-
+          echo "4"
           if [[ "${STATUS_CHECK_UPDATE_VARIABLE}" != *"204"* ]]; then
             echo "::error::Update Open Horizon Semantic Version API call returned bad status code"
             echo -e "Status:\n${STATUS_CHECK_UPDATE_VARIABLE}"
             exit 1
           fi
+          echo "5"
         env:
           OPENHORIZON_RELEASE_VERSION: ${{ vars.OPENHORIZON_RELEASE_VERSION }}
           INCREMENT_MAJOR_VERSION: ${{ github.event.inputs.INCREMENT_MAJOR_VERSION }}
