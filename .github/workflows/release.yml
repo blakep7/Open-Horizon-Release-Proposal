@@ -382,6 +382,7 @@ jobs:
             exit 1
           fi
           echo "5"
+        shell: bash
         env:
           OPENHORIZON_RELEASE_VERSION: ${{ vars.OPENHORIZON_RELEASE_VERSION }}
           INCREMENT_MAJOR_VERSION: ${{ github.event.inputs.INCREMENT_MAJOR_VERSION }}
