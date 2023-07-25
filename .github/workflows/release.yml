@@ -336,3 +336,48 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
           GH_HOST: github.com
+    
+      - name: Increment Open Horizon Release Version
+        run: |
+          if [ "$INCREMENT_MAJOR_VERSION" = true ]; then
+            IFS='.' read -r major minor patch <<< "$OPENHORIZON_RELEASE_VERSION"
+            ((major++))
+            minor=0
+            patch=0
+            NEW_RELEASE="$major.$minor.$patch"
+          elif [ "$INCREMENT_MINOR_VERSION" = true ]; then
+            IFS='.' read -r major minor patch <<< "$OPENHORIZON_RELEASE_VERSION"
+            ((minor++))
+            patch=0
+            NEW_RELEASE="$major.$minor.$patch"
+          elif [ "$INCREMENT_PATCH_VERSION" = true ]; then
+            IFS='.' read -r major minor patch <<< "$OPENHORIZON_RELEASE_VERSION"
+            ((patch++))
+            NEW_RELEASE="$major.$minor.$patch"
+          else
+            echo "::warning::No version increment flag set."
+            exit 0
+          fi
+
+          UPDATE_SEMANTIC_VERSION_DATA=$(jq -c -n '{"name":"OPENHORIZON_RELEASE_VERSION","value":$NEW_RELEASE}' --arg NEW_RELEASE "${NEW_RELEASE}")
+
+          STATUS_CHECK_UPDATE_VARIABLE=$( \
+            curl -L \
+              -w "%{http_code}\\n" \
+              -X PATCH \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+              -H "X-GitHub-Api-Version: ${GITHUB_REST_API_VERSION}" \
+              https://api.github.com/repos/${{ github.repository }}/actions/variables/OPENHORIZON_RELEASE_VERSION \
+              -d "${UPDATE_SEMANTIC_VERSION_DATA}")
+
+          if [[ "${STATUS_CHECK_UPDATE_VARIABLE}" != *"204"* ]]; then
+            echo "::error::Update Open Horizon Semantic Version API call returned bad status code"
+            echo -e "Status:\n${STATUS_CHECK_UPDATE_VARIABLE}"
+            exit 1
+          fi
+        env:
+          OPENHORIZON_RELEASE_VERSION: ${{ vars.OPENHORIZON_RELEASE_VERSION }}
+          INCREMENT_MAJOR_VERSION: ${{ github.event.inputs.INCREMENT_MAJOR_VERSION }}
+          INCREMENT_MINOR_VERSION: ${{ github.event.inputs.INCREMENT_MINOR_VERSION }}
+          INCREMENT_PATCH_VERSION: ${{ github.event.inputs.INCREMENT_PATCH_VERSION }}
