@@ -317,26 +317,6 @@ jobs:
       #   env:
       #     JSON_PAYLOAD: ${{ github.event.inputs.VERSION_JSON_FILE }}
 
-      - name: Create Open Horizon Release
-        run: |
-          cd $RUNNER_TEMP
-          printf "
-          ### Open Horizon 1.0.0 Release Information
-          
-          **Releases tied to v1.0.0** \n
-          - Anax: https://github.com/blakep7/anax/releases/tag/v${AGBOT_VERSION}
-          - Examples: https://github.com/blakep7/examples/releases/tag/v${AGBOT_VERSION}
-          " > OH_RELEASE.txt
-
-          gh release create v${{ vars.OPENHORIZON_RELEASE_VERSION }} \
-            -t "Open Horizon Release v${{ vars.OPENHORIZON_RELEASE_VERSION }}" \
-            -F OH_RELEASE.txt
-        env:
-          AGBOT_VERSION: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_agbot }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-          GH_HOST: github.com
-    
       - name: Increment Open Horizon Release Version
         run: |
           if [[ "$INCREMENT_MAJOR_VERSION" = true ]]; then
@@ -376,17 +356,29 @@ jobs:
             echo -e "Status:\n${STATUS_CHECK_UPDATE_VARIABLE}"
             exit 1
           fi
-
-          sleep 30
-
-          if [[ "${{ vars.OPENHORIZON_RELEASE_VERSION }}" != "${NEW_RELEASE}" ]]; then
-            echo "::error::Failed to update release version"
-            exit 1
-          fi
-
         shell: bash
         env:
           OPENHORIZON_RELEASE_VERSION: ${{ vars.OPENHORIZON_RELEASE_VERSION }}
           INCREMENT_MAJOR_VERSION: ${{ github.event.inputs.INCREMENT_MAJOR_VERSION }}
           INCREMENT_MINOR_VERSION: ${{ github.event.inputs.INCREMENT_MINOR_VERSION }}
           INCREMENT_PATCH_VERSION: ${{ github.event.inputs.INCREMENT_PATCH_VERSION }}
+
+      - name: Create Open Horizon Release
+        run: |
+          cd $RUNNER_TEMP
+          printf "
+          ### Open Horizon 1.0.0 Release Information
+          
+          **Releases tied to v1.0.0** \n
+          - Anax: https://github.com/blakep7/anax/releases/tag/v${AGBOT_VERSION}
+          - Examples: https://github.com/blakep7/examples/releases/tag/v${AGBOT_VERSION}
+          " > OH_RELEASE.txt
+
+          gh release create v${{ vars.OPENHORIZON_RELEASE_VERSION }} \
+            -t "Open Horizon Release v${{ vars.OPENHORIZON_RELEASE_VERSION }}" \
+            -F OH_RELEASE.txt
+        env:
+          AGBOT_VERSION: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_agbot }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          GH_HOST: github.com
