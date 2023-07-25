@@ -321,13 +321,13 @@ jobs:
         run: |
           if [[ "$INCREMENT_MAJOR_VERSION" = true ]]; then
             IFS='.' read -r major minor patch <<< "$OPENHORIZON_RELEASE_VERSION"
-            ((major++))
+            major=$((major+1))
             minor=0
             patch=0
             NEW_RELEASE="$major.$minor.$patch"
           elif [[ "$INCREMENT_MINOR_VERSION" = true ]]; then
             IFS='.' read -r major minor patch <<< "$OPENHORIZON_RELEASE_VERSION"
-            ((minor++))
+            minor=$((minor+1))
             patch=0
             NEW_RELEASE="$major.$minor.$patch"
           elif [[ "$INCREMENT_PATCH_VERSION" = true ]]; then
