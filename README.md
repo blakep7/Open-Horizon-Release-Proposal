@@ -29,7 +29,7 @@ This repository serves as the single source of truth for version tracking and th
 
 ## Release Manager Workflow
 
-The Release Manager Workflow is used to tagging and releasing of Open Horizon components. It ensures consistency and reliability in the release process. Here's a step-by-step guide on how to use the Release Manager Workflow in this repository:
+The Release Manager Workflow is used for the tagging and releasing of Open Horizon components. It ensures consistency and reliability in the release process. Here's a step-by-step guide on how to use the Release Manager Workflow in this repository:
 
 ### 1. Creating a New Release
 
