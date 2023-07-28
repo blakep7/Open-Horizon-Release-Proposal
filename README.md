@@ -25,8 +25,6 @@
 
 Open Horizon Releases is a central repository aimed at managing and coordinating the release process for various Open Horizon components. Open Horizon is an open-source, edge-computing platform for managing the service software lifecycle of containerized workloads and related machine learning assets. It enables autonomous management of applications deployed to distributed webscale fleets of edge computing nodes and devices without requiring on-premise administrators.
 
-This repository serves as the single source of truth for version tracking and the release process. It consolidates version information from multiple repositories and provides guidelines for creating releases and distributing components.
-
 ## Why is this repository important?
 
 We recognize the critical role of a single source of truth. This repository serves as the authoritative reference for version tracking and streamlined release management, consolidating version information from multiple repositories.
