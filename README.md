@@ -1,12 +1,11 @@
-<h1 align="center">Open Horizon Releases</h1>
-
-<p align="left" style="display: inline;">
+<div align="center">
   <img src="https://github.com/open-horizon/.github/blob/master/profile/open-horizon-color.png" alt="Badge" width="auto" height="20">
-</p>
+  <h1 align="center" style="display: inline-block; margin-left: 10px;">Open Horizon Releases</h1>
+</div>
+
 
 <div align="left">
-  <img src="https://github.com/open-horizon/.github/blob/master/profile/open-horizon-color.png" alt="Badge" width="auto" height="50">&nbsp;&nbsp;Open Horizon Releases
-</div>
+  <img src="https://github.com/open-horizon/.github/blob/master/profile/open-horizon-color.png" alt="Badge" width="auto" height="50">
 
 <h1 align="center">Open Horizon Releases</h1>
 
