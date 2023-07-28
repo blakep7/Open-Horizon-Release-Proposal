@@ -61,7 +61,7 @@ When it's time to create a new release for any Open Horizon component, follow th
 
 - **Step 6:** Hit the green 'Run Workflow' button.
 
-- **Step 7:** Wait for the release to be approved by one of the specific contributors that controls the release management.
+- **Step 7:** Wait for the release to be approved by one of the specific contributors that controls the release management process.
 
 ### 2. Release Workflow Runtime Processes
 
