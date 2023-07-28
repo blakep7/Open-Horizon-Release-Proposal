@@ -57,13 +57,33 @@ When it's time to create a new release for any Open Horizon component, follow th
 
 - **Step 4:** Paste your Release Versions JSON into the parameter field.
 
-- **Step 5:** Determine and select how the main Open Horizion Version should be incremented.
+- **Step 5:** Determine and select how the main Open Horizon Version should be incremented.
 
 - **Step 6:** Hit the green 'Run Workflow' button.
 
 - **Step 7:** Wait for the release to be approved by one of the specific contributors that controls the release management.
 
-- **Step 8:** Celebrate a new Open Horizion Release.
+### 2. Release Workflow Runtime Processes
+
+- **Step 1:** Trigger Anax Release Manager.
+  - Triggers the release.yml workflow within the Anax repository via GitHub's REST API, passes artifact versions from the Release Version JSON
+  - Anax release manager pulls artifacts from its build-push.yml workflow, promotes docker images, and creates the release page for Anax
+  - Waits for successful completion of the Anax release.yml workflow (checked via API)
+ 
+- **Step 2:** Trigger Examples Release Manager.
+  - Triggers the release.yml workflow within the Examples repository via GitHub's REST API, passes the entire Release Version JSON
+  - Examples release manager creates the tested versions file and release page
+  - Waits for successful completion of the Examples release.yml workflow (checked via API)
+ 
+- **Step 3:** Increment Open Horizon Version.
+  - Depending on the select option when starting the workflow, we will increment our main Open Horzion semantic version.
+  - If major version is incremented, the minor and patch version are set to 0
+  - If minor version is incremented, the patch version is set to 0
+ 
+- **Step 4:** Create Open Horizon Release.
+  - Creates the release page in this repository with a file that contains the released versions and links to the releases created in Open Horizon component repositories that are tied to the version of Open Horizon just released.
+ 
+### 3. Celebrate New Open Horizon Release!
 
 ## Contributing
 
