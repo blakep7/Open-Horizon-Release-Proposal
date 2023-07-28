@@ -6,6 +6,8 @@
 <p align="center">
   <a href="https://github.com/blakep7/Open-Horizon-Release/releases/latest">
     <img src="https://img.shields.io/github/v/release/blakep7/Open-Horizon-Release" alt="Release">
+  </a>
+  <a href="https://github.com/blakep7/Open-Horizon-Release/releases/latest">
     <img src="https://img.shields.io/github/release-date/blakep7/Open-Horizon-Release" alt="Release Date">
   </a>
 </p>
