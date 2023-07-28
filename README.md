@@ -1,3 +1,7 @@
+<div align="left">
+  <img src="https://github.com/open-horizon/.github/blob/master/profile/open-horizon-color.png" alt="Badge" width="100" height="20">
+</div>
+
 <h1 align="center">Open Horizon Releases</h1>
 
 <p align="center">
