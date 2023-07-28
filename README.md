@@ -3,7 +3,6 @@
 <p align="center">
   <img src="https://img.shields.io/github/v/release/blakep7/Open-Horizon-Release" alt="Release">
   <img src="https://img.shields.io/github/release-date/blakep7/Open-Horizon-Release" alt="Release Date">
-  <img src="https://img.shields.io/github/stars/openhorizon/open-horizon-releases" alt="Stars">
 </p>
 
 <p align="center">
@@ -19,7 +18,7 @@
 
 ## Introduction
 
-Open Horizon Releases is a central repository aimed at managing and coordinating the release process for various Open Horizon components. Open Horizon is an open-source, edge-computing platform designed to distribute, manage, and monitor artificial intelligence (AI) and Internet of Things (IoT) workloads securely and autonomously.
+Open Horizon Releases is a central repository aimed at managing and coordinating the release process for various Open Horizon components. Open Horizon is an open-source, edge-computing platform for managing the service software lifecycle of containerized workloads and related machine learning assets. It enables autonomous management of applications deployed to distributed webscale fleets of edge computing nodes and devices without requiring on-premise administrators.
 
 This repository serves as the single source of truth for version tracking and the release process. It consolidates version information from multiple repositories and provides guidelines for creating releases and distributing components.
 
