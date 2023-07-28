@@ -2,7 +2,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/github/v/release/blakep7/Open-Horizon-Release" alt="Release">
-  <img src="https://img.shields.io/github/issues/openhorizon/open-horizon-releases" alt="Issues">
+  <img src="https://img.shields.io/github/release-date/blakep7/Open-Horizon-Release" alt="Release Date">
   <img src="https://img.shields.io/github/stars/openhorizon/open-horizon-releases" alt="Stars">
 </p>
 
