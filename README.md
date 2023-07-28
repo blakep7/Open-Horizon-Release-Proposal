@@ -1,9 +1,3 @@
-<div style="display: flex; align-items: center;">
-  <img src="https://github.com/open-horizon/.github/blob/master/profile/open-horizon-color.png" alt="Badge" width="auto" height="20" style="margin-right: 10px;">
-  <h1 align="center" style="flex: 1;">Open Horizon Releases</h1>
-</div>
-
-
 <div align="left">
   <img src="https://github.com/open-horizon/.github/blob/master/profile/open-horizon-color.png" alt="Badge" width="auto" height="50">
 
