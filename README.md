@@ -4,8 +4,10 @@
 <h1 align="center">Open Horizon Releases</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/github/v/release/blakep7/Open-Horizon-Release" alt="Release">
-  <img src="https://img.shields.io/github/release-date/blakep7/Open-Horizon-Release" alt="Release Date">
+  <a href="https://github.com/your-username/your-repository-name/releases/latest">
+    <img src="https://img.shields.io/github/v/release/blakep7/Open-Horizon-Release" alt="Release">
+    <img src="https://img.shields.io/github/release-date/blakep7/Open-Horizon-Release" alt="Release Date">
+  </a>
 </p>
 
 <p align="center">
