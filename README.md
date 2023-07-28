@@ -39,15 +39,15 @@ When it's time to create a new release for any Open Horizon component, follow th
 
 ```json
 {   
-	"amd64_agbot": "2.31.0-1498",
-	"amd64_anax": "2.31.0-1498",
-	"amd64_anax_k8s": "2.31.0-1498",
-	"amd64_cloud-sync-service": "1.10.1-1498",
-	"amd64_edge-sync-service": "1.10.1-1498",
-	"amd64_exchange-api": "2.117.0-1163",
-	"amd64_vault": "1.1.2-806",
-	"fdo-owner-services": "2.31.0-1498",
-	"sdo-owner-services": "1.11.16-1083"
+    "amd64_agbot": "2.31.0-1498",
+    "amd64_anax": "2.31.0-1498",
+    "amd64_anax_k8s": "2.31.0-1498",
+    "amd64_cloud-sync-service": "1.10.1-1498",
+    "amd64_edge-sync-service": "1.10.1-1498",
+    "amd64_exchange-api": "2.117.0-1163",
+    "amd64_vault": "1.1.2-806",
+    "fdo-owner-services": "2.31.0-1498",
+    "sdo-owner-services": "1.11.16-1083"
 }
 ```
 
