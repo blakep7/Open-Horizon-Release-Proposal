@@ -1,7 +1,7 @@
 <h1 align="center">Open Horizon Releases</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/github/license/openhorizon/open-horizon-releases" alt="License">
+  <img src="https://img.shields.io/github/v/release/blakep7/Open-Horizon-Release" alt="Release">
   <img src="https://img.shields.io/github/issues/openhorizon/open-horizon-releases" alt="Issues">
   <img src="https://img.shields.io/github/stars/openhorizon/open-horizon-releases" alt="Stars">
 </p>
