@@ -51,29 +51,23 @@ When it's time to create a new release for any Open Horizon component, follow th
 }
 ```
 
-- **Step 2:** Clone the forked repository to your local machine.
+- **Step 2:** Navigate to the [Release Manager Workflow Page](https://github.com/blakep7/Open-Horizon-Release/actions/workflows/release.yml)
 
-- **Step 3:** Update the version information of the component in the appropriate JSON file under the [releases](releases) directory. Make sure to follow semantic versioning (MAJOR.MINOR.PATCH).
+- **Step 3:** Click 'Run Workflow'.
 
-- **Step 4:** Commit the changes with a descriptive message about the version update.
+- **Step 4:** Paste your Release Versions JSON into the parameter field.
 
-- **Step 5:** Create a pull request (PR) to the main repository.
+- **Step 5:** Determine and select how the main Open Horizion Version should be incremented.
 
-- **Step 6:** The Release Manager will review the changes and merge the PR if everything looks good.
+- **Step 6:** Hit the green 'Run Workflow' button.
 
-### 2. Release and Tagging
+- **Step 7:** Wait for the release to be approved by one of the specific contributors that controls the release management.
 
-Once the pull request is merged, the Release Manager will follow these steps to release and tag the component:
-
-- **Step 1:** The Release Manager will create a new GitHub release using the version information provided in the PR.
-
-- **Step 2:** The Release Manager will tag the component's repository with the corresponding version number.
-
-- **Step 3:** The tagged release will trigger the CI/CD process for the component, and it will be available for use.
+- **Step 8:** Celebrate a new Open Horizion Release.
 
 ## Contributing
 
-Contributions to Open Horizon Releases are welcome! If you have suggestions, bug reports, or want to contribute to the release process, please follow the guidelines in [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions to Open Horizon Releases are welcome! If you have suggestions, bug reports, or want to contribute to the release process, please follow the guidelines in [CONTRIBUTING.md](https://github.com/open-horizon/.github/blob/master/CONTRIBUTING.md).
 
 ## License
 
