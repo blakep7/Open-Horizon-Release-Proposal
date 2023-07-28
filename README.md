@@ -1,7 +1,7 @@
 <h1 align="center">Open Horizon Releases</h1>
 
 <p align="left" style="display: inline;">
-  <img src="https://example.com/path/to/your-badge.png" alt="Badge" width="auto" height="20">
+  <img src="https://github.com/open-horizon/.github/blob/master/profile/open-horizon-color.png" alt="Badge" width="auto" height="20">
 </p>
 
 <div align="left">
