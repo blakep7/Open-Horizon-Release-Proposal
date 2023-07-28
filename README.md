@@ -11,7 +11,7 @@
     <img src="https://img.shields.io/github/release-date/blakep7/Open-Horizon-Release" alt="Release Date">
   </a>
 </p>
-
+<img src="https://img.shields.io/github/release-date/blakep7/Open-Horizon-Release" alt="Release Date">
 <p align="center">
   This repository is dedicated to releasing Open Horizon components and tracking their versions across repositories.
 </p>
