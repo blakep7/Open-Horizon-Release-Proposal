@@ -1,8 +1,7 @@
 <div align="left">
-  <img src="https://github.com/open-horizon/.github/blob/master/profile/open-horizon-color.png" alt="Badge" width="auto" height="50">
+  <img src="https://github.com/open-horizon/.github/blob/master/profile/open-horizon-color.png" alt="Badge" width="auto" height="50">&nbsp;&nbsp;Open Horizon Releases
 </div>
 
-<h1 align="center">Open Horizon Releases</h1>
 
 <p align="center">
   <img src="https://img.shields.io/github/v/release/blakep7/Open-Horizon-Release" alt="Release">
