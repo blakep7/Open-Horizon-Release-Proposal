@@ -27,6 +27,12 @@ Open Horizon Releases is a central repository aimed at managing and coordinating
 
 This repository serves as the single source of truth for version tracking and the release process. It consolidates version information from multiple repositories and provides guidelines for creating releases and distributing components.
 
+## Why is this repository important?
+
+We recognize the critical role of a single source of truth. This repository serves as the authoritative reference for version tracking and streamlined release management, consolidating version information from multiple repositories.
+
+The release page within this repository serves as a hub connecting the main Open Horizon version to specific versions and their respective release pages of the individual components. This integration enables easy tracking of component releases that were tested together as part of the main Open Horizon release.
+
 ## Release Manager Workflow
 
 The Release Manager Workflow is used for the tagging and releasing of Open Horizon components. It ensures consistency and reliability in the release process. Here's a step-by-step guide on how to use the Release Manager Workflow in this repository:
