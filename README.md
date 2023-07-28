@@ -35,7 +35,7 @@ The Release Manager Workflow is used for the tagging and releasing of Open Horiz
 
 When it's time to create a new release for any Open Horizon component, follow these steps:
 
-- **Step 1:** Generate your Release Versions JSON, it must include all of the fields within the example below.
+- **Step 1:** Generate your Release Versions JSON, it must include all of the keys within the example below.
 
 ```json
 {   
