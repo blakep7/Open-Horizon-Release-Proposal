@@ -111,7 +111,7 @@ jobs:
           
           sleep 10
 
-          if [[ RELEASE_STATUS != 'null' ]]; then
+          if [[ RELEASE_STATUS != *"null"* ]]; then
             echo "::error::Attempted to create a release for a version of Open Horizon that already has a release page, see $RELEASE_STATUS"
             echo "::error::Release process failed, consider incrementing the Open Horizon version"
             exit 1
