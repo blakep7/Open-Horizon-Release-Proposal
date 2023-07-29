@@ -49,6 +49,56 @@ jobs:
     environment: release_environment
 
     steps:
+      - name: Increment Open Horizon Release Version
+        id: update_version
+        run: |
+          if [[ "$INCREMENT_MAJOR_VERSION" = true ]]; then
+            IFS='.' read -r major minor patch <<< "$OPENHORIZON_RELEASE_VERSION"
+            major=$((major+1))
+            minor=0
+            patch=0
+            NEW_RELEASE="$major.$minor.$patch"
+          elif [[ "$INCREMENT_MINOR_VERSION" = true ]]; then
+            IFS='.' read -r major minor patch <<< "$OPENHORIZON_RELEASE_VERSION"
+            minor=$((minor+1))
+            patch=0
+            NEW_RELEASE="$major.$minor.$patch"
+          elif [[ "$INCREMENT_PATCH_VERSION" = true ]]; then
+            IFS='.' read -r major minor patch <<< "$OPENHORIZON_RELEASE_VERSION"
+            patch=$((patch+1))
+            NEW_RELEASE="$major.$minor.$patch"
+          else
+            echo "::warning::No version increment flag set."
+            NEW_RELEASE="$OPENHORIZON_RELEASE_VERSION"
+            exit 0
+          fi
+
+          echo "NEW_RELEASE=$NEW_RELEASE" >> "$GITHUB_OUTPUT"
+
+          UPDATE_SEMANTIC_VERSION_DATA=$(jq -c -n '{"name":"OPENHORIZON_RELEASE_VERSION","value":$NEW_RELEASE}' --arg NEW_RELEASE "${NEW_RELEASE}")
+
+          STATUS_CHECK_UPDATE_VARIABLE=$( \
+            curl -L \
+              -w "%{http_code}\\n" \
+              -X PATCH \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${OPENHORIZON_RELEASE_MANAGER_TOKEN}" \
+              -H "X-GitHub-Api-Version: ${GITHUB_REST_API_VERSION}" \
+              https://api.github.com/repos/${{ github.repository }}/actions/variables/OPENHORIZON_RELEASE_VERSION \
+              -d "${UPDATE_SEMANTIC_VERSION_DATA}")
+
+          if [[ "${STATUS_CHECK_UPDATE_VARIABLE}" != *"204"* ]]; then
+            echo "::error::Update Open Horizon Semantic Version API call returned bad status code"
+            echo -e "Status:\n${STATUS_CHECK_UPDATE_VARIABLE}"
+            exit 1
+          fi
+        shell: bash
+        env:
+          OPENHORIZON_RELEASE_VERSION: ${{ vars.OPENHORIZON_RELEASE_VERSION }}
+          INCREMENT_MAJOR_VERSION: ${{ github.event.inputs.INCREMENT_MAJOR_VERSION }}
+          INCREMENT_MINOR_VERSION: ${{ github.event.inputs.INCREMENT_MINOR_VERSION }}
+          INCREMENT_PATCH_VERSION: ${{ github.event.inputs.INCREMENT_PATCH_VERSION }}
+
       - name: Check if Open Horizon Release Already Exists
         run: |
           RELEASE_STATUS=$(
@@ -56,7 +106,7 @@ jobs:
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${OPENHORIZON_RELEASE_MANAGER_TOKEN}" \
               -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
-              'https://api.github.com/repos/${{ github.repository }}/releases/tags/v${{ env.OPENHORIZON_RELEASE_VERSION }}' \
+              'https://api.github.com/repos/${{ github.repository }}/releases/tags/v${{ steps.update_version.outputs.NEW_RELEASE }}' \
               | jq -r '.html_url')
           
           sleep 10
@@ -374,56 +424,6 @@ jobs:
         shell: bash
         env:
           JSON_PAYLOAD: ${{ github.event.inputs.VERSION_JSON_FILE }}
-
-      - name: Increment Open Horizon Release Version
-        id: update_version
-        run: |
-          if [[ "$INCREMENT_MAJOR_VERSION" = true ]]; then
-            IFS='.' read -r major minor patch <<< "$OPENHORIZON_RELEASE_VERSION"
-            major=$((major+1))
-            minor=0
-            patch=0
-            NEW_RELEASE="$major.$minor.$patch"
-          elif [[ "$INCREMENT_MINOR_VERSION" = true ]]; then
-            IFS='.' read -r major minor patch <<< "$OPENHORIZON_RELEASE_VERSION"
-            minor=$((minor+1))
-            patch=0
-            NEW_RELEASE="$major.$minor.$patch"
-          elif [[ "$INCREMENT_PATCH_VERSION" = true ]]; then
-            IFS='.' read -r major minor patch <<< "$OPENHORIZON_RELEASE_VERSION"
-            patch=$((patch+1))
-            NEW_RELEASE="$major.$minor.$patch"
-          else
-            echo "::warning::No version increment flag set."
-            NEW_RELEASE="$OPENHORIZON_RELEASE_VERSION"
-            exit 0
-          fi
-
-          echo "NEW_RELEASE=$NEW_RELEASE" >> "$GITHUB_OUTPUT"
-
-          UPDATE_SEMANTIC_VERSION_DATA=$(jq -c -n '{"name":"OPENHORIZON_RELEASE_VERSION","value":$NEW_RELEASE}' --arg NEW_RELEASE "${NEW_RELEASE}")
-
-          STATUS_CHECK_UPDATE_VARIABLE=$( \
-            curl -L \
-              -w "%{http_code}\\n" \
-              -X PATCH \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${OPENHORIZON_RELEASE_MANAGER_TOKEN}" \
-              -H "X-GitHub-Api-Version: ${GITHUB_REST_API_VERSION}" \
-              https://api.github.com/repos/${{ github.repository }}/actions/variables/OPENHORIZON_RELEASE_VERSION \
-              -d "${UPDATE_SEMANTIC_VERSION_DATA}")
-
-          if [[ "${STATUS_CHECK_UPDATE_VARIABLE}" != *"204"* ]]; then
-            echo "::error::Update Open Horizon Semantic Version API call returned bad status code"
-            echo -e "Status:\n${STATUS_CHECK_UPDATE_VARIABLE}"
-            exit 1
-          fi
-        shell: bash
-        env:
-          OPENHORIZON_RELEASE_VERSION: ${{ vars.OPENHORIZON_RELEASE_VERSION }}
-          INCREMENT_MAJOR_VERSION: ${{ github.event.inputs.INCREMENT_MAJOR_VERSION }}
-          INCREMENT_MINOR_VERSION: ${{ github.event.inputs.INCREMENT_MINOR_VERSION }}
-          INCREMENT_PATCH_VERSION: ${{ github.event.inputs.INCREMENT_PATCH_VERSION }}
 
       - name: Create Open Horizon Release
         run: |
