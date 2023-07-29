@@ -423,6 +423,7 @@ jobs:
           echo "::debug::Step Success"
         shell: bash
         env:
+          AGBOT_VERSION: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_agbot }}
           JSON_PAYLOAD: ${{ github.event.inputs.VERSION_JSON_FILE }}
 
       - name: Create Open Horizon Release
