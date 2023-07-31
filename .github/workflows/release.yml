@@ -97,7 +97,7 @@ jobs:
             echo -e "Status:\n${STATUS_CHECK_UPDATE_VARIABLE}"
             exit 1
           fi
-          echo "::endgroup::""
+          echo "::endgroup::"
         shell: bash
         env:
           OPENHORIZON_RELEASE_VERSION: ${{ vars.OPENHORIZON_RELEASE_VERSION }}
@@ -148,7 +148,7 @@ jobs:
             echo "::notice::Release process will continue without triggering a new Anax release, existing release will be linked to this Open Horizion version"
             exit 0
           fi
-          echo "::endgroup::""
+          echo "::endgroup::"
 
           sleep 10
 
@@ -167,7 +167,7 @@ jobs:
             echo "::error title=Failed API Call::Failed to get Anax Release Environment ID, check API Call"
             exit 1
           fi
-          echo "::endgroup::""
+          echo "::endgroup::"
       
           # Trigger Anax Release Manager
           echo "::group::Trigger Anax Release Manager via API"
