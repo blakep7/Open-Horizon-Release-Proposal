@@ -486,7 +486,6 @@ jobs:
           echo "- Vault: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_vault }}" >> $GITHUB_STEP_SUMMARY
           echo "- FDO: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).fdo-owner-services }}" >> $GITHUB_STEP_SUMMARY
           echo "- SDO: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).sdo-owner-services }}" >> $GITHUB_STEP_SUMMARY
-
         env:
           AGBOT_VERSION: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_agbot }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
