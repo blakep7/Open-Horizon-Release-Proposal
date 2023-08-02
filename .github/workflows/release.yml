@@ -22,6 +22,11 @@ on:
         required: true
         type: boolean
         default: true
+      IS_LATEST:
+        description: "Should we push the latest Dockerhub tags and mark releases as latest"
+        required: true
+        type: boolean
+        default: true
 
 env:
   GITHUB_REST_API_VERSION: 2022-11-28
@@ -179,7 +184,7 @@ jobs:
               -H "Authorization: Bearer ${OPENHORIZON_RELEASE_MANAGER_TOKEN}" \
               -H "X-GitHub-Api-Version: ${{ env.GITHUB_REST_API_VERSION }}" \
               'https://api.github.com/repos/${{ env.ANAX_REPOSITORY_OWNER }}/${{ env.ANAX_REPOSITORY_NAME }}/actions/workflows/${{ env.ANAX_RELEASE_MANAGER_FILE_NAME }}/dispatches' \
-              -d '{"ref":"${{ env.ANAX_RELEASE_MANAGER_BRANCH }}","inputs":{"AGBOT_VERSION": "${{ env.AGBOT_VERSION }}","ANAX_VERSION": "${{ env.ANAX_VERSION }}","ANAX_K8S_VERSION": "${{ env.ANAX_K8S_VERSION }}","ANAX_CSS_VERSION": "${{ env.ANAX_CSS_VERSION }}","ANAX_ESS_VERSION": "${{ env.ANAX_ESS_VERSION }}"}}')
+              -d '{"ref":"${{ env.ANAX_RELEASE_MANAGER_BRANCH }}","inputs":{"AGBOT_VERSION": "${{ env.AGBOT_VERSION }}","ANAX_VERSION": "${{ env.ANAX_VERSION }}","ANAX_K8S_VERSION": "${{ env.ANAX_K8S_VERSION }}","ANAX_CSS_VERSION": "${{ env.ANAX_CSS_VERSION }}","ANAX_ESS_VERSION": "${{ env.ANAX_ESS_VERSION }}","IS_LATEST": "${{ env.IS_LATEST }}"}}')
 
           if [[ "${STATUS_CHECK_ONE}" != *"204"* ]]; then
             echo "::error title=Failed API Call::Anax workflow dispatch API call returned bad status code"
@@ -285,6 +290,7 @@ jobs:
           ANAX_K8S_VERSION: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_anax_k8s }}
           ANAX_CSS_VERSION: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_cloud-sync-service }}
           ANAX_ESS_VERSION: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_edge-sync-service }}
+          IS_LATEST: ${{ github.event.inputs.IS_LATEST }}
 
       # Trigger the Examples Release Manager Workflow (release.yml) to generate the Examples Release
       - name: Trigger Examples Release Manager
