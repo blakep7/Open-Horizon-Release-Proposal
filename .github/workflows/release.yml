@@ -450,7 +450,21 @@ jobs:
       - name: Create Open Horizon Release
         run: |
           cd $RUNNER_TEMP
-          printf "${{ github.event.inputs.VERSION_JSON_FILE }}" > Released_Versions.txt
+          printf "{
+          "open-horizon": "${{ steps.update_version.outputs.NEW_RELEASE }}",
+          "anax": 
+            {
+              "agbot": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_agbot }}",
+              "anax": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_anax }}",
+              "anax-k8s": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_anax_k8s }}",
+              "cloud-sync-service": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_cloud-sync-service }}",
+              "edge-sync-service": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_edge-sync-service }}"
+            },
+          "exchange-api": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_exchange-api }}",
+          "vault": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_vault }}",
+          "fdo": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).fdo-owner-services }}",
+          "sdo": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).sdo-owner-services }}"
+          }" > Released_Versions.txt
 
           printf "### Open Horizon ${{ steps.update_version.outputs.NEW_RELEASE }} Release Information
           
