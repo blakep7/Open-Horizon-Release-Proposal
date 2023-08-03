@@ -475,7 +475,7 @@ jobs:
 
           RELEASE_URL=$( \
             gh release create v${{ steps.update_version.outputs.NEW_RELEASE }} \
-              ${RUNNER_TEMP}/Released_Versions.txt \
+              ${RUNNER_TEMP}/Released_Versions.json \
               -t "Open Horizon Release v${{ steps.update_version.outputs.NEW_RELEASE }}" \
               -F OH_RELEASE.txt)
 
