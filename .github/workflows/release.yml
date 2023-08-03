@@ -497,9 +497,9 @@ jobs:
           echo "- SDO: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).sdo-owner-services }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### JSON Inputted for this Workflow Run" >> $GITHUB_STEP_SUMMARY
-          echo "```json" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
           echo "$(jq -n '${{ github.event.inputs.VERSION_JSON_FILE }}')" >> $GITHUB_STEP_SUMMARY
-          echo "```" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
         env:
           AGBOT_VERSION: ${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_agbot }}
