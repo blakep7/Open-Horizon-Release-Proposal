@@ -451,16 +451,16 @@ jobs:
         run: |
           cd $RUNNER_TEMP
           jq -n '{
-            "open-horizon": "${{ steps.update_version.outputs.NEW_RELEASE }}",
+            "open_horizon": "${{ steps.update_version.outputs.NEW_RELEASE }}",
             "anax": 
               {
                 "agbot": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_agbot }}",
                 "anax": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_anax }}",
-                "anax-k8s": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_anax_k8s }}",
-                "cloud-sync-service": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_cloud-sync-service }}",
-                "edge-sync-service": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_edge-sync-service }}"
+                "anax_k8s": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_anax_k8s }}",
+                "cloud_sync_service": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_cloud-sync-service }}",
+                "edge_sync_service": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_edge-sync-service }}"
               },
-            "exchange-api": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_exchange-api }}",
+            "exchange_api": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_exchange-api }}",
             "vault": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).amd64_vault }}",
             "fdo": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).fdo-owner-services }}",
             "sdo": "${{ fromJSON(github.event.inputs.VERSION_JSON_FILE).sdo-owner-services }}"
@@ -498,7 +498,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### JSON Inputted for this Workflow Run" >> $GITHUB_STEP_SUMMARY
           echo "```json" >> $GITHUB_STEP_SUMMARY
-          jq -n '${{ github.event.inputs.VERSION_JSON_FILE }}' >> $GITHUB_STEP_SUMMARY
+          echo "$(jq -n '${{ github.event.inputs.VERSION_JSON_FILE }}')" >> $GITHUB_STEP_SUMMARY
           echo "```" >> $GITHUB_STEP_SUMMARY
 
         env:
