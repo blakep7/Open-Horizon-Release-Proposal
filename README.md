@@ -1,5 +1,5 @@
 <div align="left">
-  <img src="https://github.com/open-horizon/.github/blob/master/profile/open-horizon-color.png" alt="Badge" width="auto" height="50">
+  <img src="https://github.com/open-horizon/artwork/blob/master/white/open-horizon-white.png" alt="Badge" width="auto" height="50">
   
 <h1 align="center">Open Horizon Releases</h1>
 
